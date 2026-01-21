@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Child Iframe</title>
+  </head>
+  <body style="background: #f0f0f0">
+    <h2>Child Iframe</h2>
+    <button id="sendBtn">Send Message to Parent</button>
+    <div id="response"></div>
+
+    <script>
+      const responseDiv = document.getElementById("response");
+      const parent = window.parent;
+      const button = document.getElementById("sendBtn");
+
+      // Send a message to the parent
+      button.addEventListener("click", () => {
+        parent.postMessage(
+          {
+            type: "greeting",
+            data: "Hello from iframe!",
+          },
+          window.location.origin,
+        ); // Send to same origin as current page
+      });
+
+      // Listen for responses from parent
+      window.addEventListener("message", (event) => {
+        // Validate the origin - only accept messages from the parent window
+        const expectedOrigin = window.location.origin;
+        if (event.origin !== expectedOrigin) {
+          console.log("Ignored message from unexpected origin:", event.origin);
+          return;
+        }
+
+        // Only process messages with expected structure
+        if (!event.data || typeof event.data !== "object" || !event.data.type) {
+          console.log("Ignored message without expected structure:", event.data);
+          return;
+        }
+
+        // Only process response messages from parent
+        if (event.data.type !== "response") {
+          console.log("Ignored non-response message:", event.data.type);
+          return;
+        }
+
+        console.log("Child received:", event.data);
+        responseDiv.textContent = "Received: " + JSON.stringify(event.data);
+      });
+    </script>
+  </body>
+</html>
